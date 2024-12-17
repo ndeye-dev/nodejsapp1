@@ -5,7 +5,7 @@ const swaggerUi = require('swagger-ui-express');
 const mongoose = require('mongoose');
 
 const app = express();
-const port = process.env.PORT || 3000; // Utilisation du port dynamique fourni par Render ou 3000 en local
+const port = process.env.PORT || 3000; 
 
 // Middleware
 app.use(express.json());
@@ -21,24 +21,23 @@ const swaggerOptions = {
       description: 'API pour gérer des contacts',
     },
     servers: [
-      { url: "https://nodejsapp1-gsy0.onrender.com"}
+      { url: "https://nodejsapp1-gsy0.onrender.com" }
     ]
   },
   apis: ['./app.js'],
 };
-//llllllllllll
+
 const swaggerDocs = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // Connexion à MongoDB
-mongoose.connect('mongodb+srv://projetapp:basedonnee@cluster0.lzatl.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
+mongoose.connect('mongodb+srv://projetapp:basedonnee@cluster0.lzatl.mongodb.net/?retryWrites=true&w=majority')
   .then(() => {
     console.log('Connexion réussie à MongoDB');
   })
   .catch((error) => {
     console.error('Erreur lors de la connexion à MongoDB :', error);
   });
-
 
 // Définir le schéma et le modèle de données pour les contacts
 const todoSchema = new mongoose.Schema({
@@ -68,7 +67,7 @@ const Todo = mongoose.model('Todo', todoSchema);
  *                 type: object
  *                 properties:
  *                   id:
- *                     type: integer
+ *                     type: string  // Changement de integer à string
  *                   prenom:
  *                     type: string
  *                   nom:
@@ -117,7 +116,7 @@ app.get('/todos', async (req, res) => {
  *               type: object
  *               properties:
  *                 id:
- *                   type: integer
+ *                   type: string  // Changement de integer à string
  *                 prenom:
  *                   type: string
  *                 nom:
@@ -154,7 +153,7 @@ app.post('/todos', async (req, res) => {
  *         name: id
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string  // Changement de integer à string
  *     requestBody:
  *       required: true
  *       content:
@@ -180,12 +179,16 @@ app.put('/todos/:id', async (req, res) => {
   const { id } = req.params;
   const { prenom, nom, email, telephone } = req.body;
   try {
-    const contact = await Todo.findByIdAndUpdate(id, { prenom, nom, email, telephone }, { new: true });
-    if (contact) {
-      res.json(contact);
-    } else {
-      res.status(404).send('Contact not found');
+    const contact = await Todo.findById(id);
+    if (!contact) {
+      return res.status(404).send('Contact not found');
     }
+    contact.prenom = prenom;
+    contact.nom = nom;
+    contact.email = email;
+    contact.telephone = telephone;
+    await contact.save();
+    res.json(contact);
   } catch (err) {
     console.error('Error updating contact:', err);
     res.status(500).send('Error updating contact');
@@ -202,7 +205,7 @@ app.put('/todos/:id', async (req, res) => {
  *         name: id
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string  // Changement de integer à string
  *     responses:
  *       204:
  *         description: "Contact supprimé avec succès"
@@ -210,7 +213,11 @@ app.put('/todos/:id', async (req, res) => {
 app.delete('/todos/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    await Todo.findByIdAndDelete(id);
+    const contact = await Todo.findById(id);
+    if (!contact) {
+      return res.status(404).send('Contact not found');
+    }
+    await contact.remove();
     res.status(204).send();
   } catch (err) {
     console.error('Error deleting contact:', err);
