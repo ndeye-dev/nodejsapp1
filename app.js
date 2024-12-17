@@ -20,6 +20,9 @@ const swaggerOptions = {
       version: '1.0.0',
       description: 'API pour gérer des contacts',
     },
+    servers: [
+      { url: "https://nodejsapp1-gsy0.onrender.com"}
+    ]
   },
   apis: ['./app.js'],
 };
