@@ -6,14 +6,14 @@ const path = require('path');
 const mongoose = require('mongoose');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000; // Utilisation du port dynamique fourni par Render ou 3000 en local
 
 // Middleware
 app.use(express.static('public'));
 app.use(express.json());
 app.use(cors());
 
-
+// Configuration Swagger
 const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
@@ -38,7 +38,7 @@ mongoose.connect('mongodb+srv://projetapp:basedonnee@cluster0.lzatl.mongodb.net/
     console.error('Erreur lors de la connexion à MongoDB :', error);
   });
 
-
+// Définir le schéma et le modèle de données pour les contacts
 const todoSchema = new mongoose.Schema({
   prenom: String,
   nom: String,
@@ -86,6 +86,7 @@ app.get('/todos', async (req, res) => {
     const todos = await Todo.find();
     res.json(todos);
   } catch (err) {
+    console.error('Error fetching contacts:', err);
     res.status(500).send('Server Error');
   }
 });
@@ -141,6 +142,7 @@ app.post('/todos', async (req, res) => {
     await newTodo.save();
     res.status(201).json(newTodo);
   } catch (err) {
+    console.error('Error creating contact:', err);
     res.status(400).send('Error creating contact');
   }
 });
@@ -188,6 +190,7 @@ app.put('/todos/:id', async (req, res) => {
       res.status(404).send('Contact not found');
     }
   } catch (err) {
+    console.error('Error updating contact:', err);
     res.status(500).send('Error updating contact');
   }
 });
@@ -213,6 +216,7 @@ app.delete('/todos/:id', async (req, res) => {
     await Todo.findByIdAndDelete(id);
     res.status(204).send();
   } catch (err) {
+    console.error('Error deleting contact:', err);
     res.status(500).send('Error deleting contact');
   }
 });
@@ -220,5 +224,5 @@ app.delete('/todos/:id', async (req, res) => {
 // Démarrage du serveur
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
-  console.log(`API documentation is available at http://localhost:3000/api-docs/`);
+  console.log(`API documentation is available at http://localhost:${port}/api-docs/`);
 });
