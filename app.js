@@ -2,14 +2,12 @@ const express = require('express');
 const cors = require('cors');
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
-const path = require('path');
 const mongoose = require('mongoose');
 
 const app = express();
 const port = process.env.PORT || 3000; // Utilisation du port dynamique fourni par Render ou 3000 en local
 
 // Middleware
-app.use(express.static('public'));
 app.use(express.json());
 app.use(cors());
 
@@ -47,11 +45,6 @@ const todoSchema = new mongoose.Schema({
 });
 
 const Todo = mongoose.model('Todo', todoSchema);
-
-// Route pour servir le fichier index.html
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
 
 // Routes de l'API
 
