@@ -31,13 +31,17 @@ const swaggerDocs = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // Connexion à MongoDB
-mongoose.connect('mongodb+srv://projetapp:basedonnee@cluster0.lzatl.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
+mongoose.connect('mongodb+srv://projetapp:basedonnee@cluster0.lzatl.mongodb.net/?retryWrites=true&w=majority', {
+
+  serverSelectionTimeoutMS: 30000  // Temps d'attente plus long pour la connexion
+})
   .then(() => {
     console.log('Connexion réussie à MongoDB');
   })
   .catch((error) => {
     console.error('Erreur lors de la connexion à MongoDB :', error);
   });
+
 
 // Définir le schéma et le modèle de données pour les contacts
 const todoSchema = new mongoose.Schema({
