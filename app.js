@@ -12,7 +12,7 @@ const port = 3000; // Utilisation du port dynamique fourni par Render ou 3000 en
 app.use(express.json());
 app.use(cors());
 
-// Servir les fichiers statiques à partir du dossier 'Node1/public'
+// Servir les fichiers statiques à partir du dossier 'Nod
 app.use(express.static(path.join(__dirname, '..', 'Node1')));  // <-- Remarque ici
 
 // Configuration Swagger
@@ -50,10 +50,10 @@ const todoSchema = new mongoose.Schema({
 
 const Todo = mongoose.model('Todo', todoSchema);
 
-// Route pour servir le fichier index.html situé dans 'Node1/public'
+// Route pour servir le fichier index.html situé dans 'Nod
 app.get('/', (req, res) => {
   // Le bon chemin absolu vers le fichier index.html
-  res.sendFile(path.join(__dirname, '..', 'Node1', 'public', 'index.html'));  // <-- Chemin corrigé
+  res.sendFile(path.join(__dirname, '..', 'Node1', 'index.html'));  // <-- Chemin corrigé
 });
 
 // Routes de l'API
