@@ -12,8 +12,8 @@ const port = 3000; // Utilisation du port dynamique fourni par Render ou 3000 en
 app.use(express.json());
 app.use(cors());
 
-// Servir les fichiers statiques à partir du dossier 'Nod
-app.use(express.static(path.join(__dirname, '..', 'Node1')));  // <-- Remarque ici
+// Servir les fichiers statiques à partir du dossier 'Node1'
+app.use(express.static(path.join(__dirname, '..', 'Node1')));  
 
 // Configuration Swagger
 const swaggerOptions = {
@@ -31,7 +31,7 @@ const swaggerOptions = {
 const swaggerDocs = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-// Connexion à MongoDBbbbbb
+// Connexion à MongoDB
 mongoose.connect('mongodb+srv://projetapp:basedonnee@cluster0.lzatl.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
   .then(() => {
     console.log('Connexion réussie à MongoDB');
@@ -50,13 +50,13 @@ const todoSchema = new mongoose.Schema({
 
 const Todo = mongoose.model('Todo', todoSchema);
 
-// Route pour servir le fichier index.html situé dans 'Nod
+// Route pour servir le fichier index.html
 app.get('/', (req, res) => {
-  // Le bon chemin absolu vers le fichier index.html
-  res.sendFile(path.join(__dirname, '..', 'Node1', 'index.html'));  // <-- Chemin corrigé
+  res.sendFile(path.join(__dirname, '..', 'Node1', 'index.html'));  
 });
 
 // Routes de l'API
+// Récupérer tous les contacts
 app.get('/todos', async (req, res) => {
   try {
     const todos = await Todo.find();
@@ -106,13 +106,17 @@ app.put('/todos/:id', async (req, res) => {
 app.delete('/todos/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    await Todo.findByIdAndDelete(id);
-    res.status(204).send();
+    const result = await Todo.findByIdAndDelete(id);
+    if (result) {
+      res.status(204).send(); // Supprimé avec succès
+    } else {
+      res.status(404).send('Contact not found');
+    }
   } catch (err) {
     console.error('Error deleting contact:', err);
     res.status(500).send('Error deleting contact');
   }
-});  
+});
 
 // Démarrage du serveur
 app.listen(port, () => {
