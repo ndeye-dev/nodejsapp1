@@ -112,7 +112,7 @@ app.delete('/todos/:id', async (req, res) => {
     console.error('Error deleting contact:', err);
     res.status(500).send('Error deleting contact');
   }
-});
+});  
 
 // Démarrage du serveur
 app.listen(port, () => {
