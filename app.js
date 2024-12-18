@@ -13,7 +13,7 @@ app.use(express.json());
 app.use(cors());
 
 // Servir les fichiers statiques à partir du dossier 'Node1/public'
-app.use(express.static(path.join(__dirname, '..', 'Node1', 'public')));  // <-- Remarque ici
+app.use(express.static(path.join(__dirname, '..', 'Node1')));  // <-- Remarque ici
 
 // Configuration Swagger
 const swaggerOptions = {
