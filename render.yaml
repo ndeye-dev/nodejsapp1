@@ -1,7 +1,0 @@
-services:
- - type: web 
- name: my-node-app 
- env: node
-  plan: free 
-  buildCommand: 'npm install'
-   startCommand: 'node app.js'

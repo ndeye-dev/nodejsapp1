@@ -2,14 +2,18 @@ const express = require('express');
 const cors = require('cors');
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+const path = require('path');
 const mongoose = require('mongoose');
 
 const app = express();
-const port = process.env.PORT || 3000; 
+const port = 3000; // Utilisation du port dynamique fourni par Render ou 3000 en local
 
 // Middleware
 app.use(express.json());
 app.use(cors());
+
+// Servir les fichiers statiques à partir du dossier 'Node1/public'
+app.use(express.static(path.join(__dirname, '..', 'Node1', 'public')));  // <-- Remarque ici
 
 // Configuration Swagger
 const swaggerOptions = {
@@ -20,9 +24,6 @@ const swaggerOptions = {
       version: '1.0.0',
       description: 'API pour gérer des contacts',
     },
-    servers: [
-      { url: "https://nodejsapp1-gsy0.onrender.com" }
-    ]
   },
   apis: ['./app.js'],
 };
@@ -31,7 +32,7 @@ const swaggerDocs = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // Connexion à MongoDB
-mongoose.connect('mongodb+srv://projetapp:basedonnee@cluster0.lzatl.mongodb.net/?retryWrites=true&w=majority')
+mongoose.connect('mongodb+srv://projetapp:basedonnee@cluster0.lzatl.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
   .then(() => {
     console.log('Connexion réussie à MongoDB');
   })
@@ -49,34 +50,13 @@ const todoSchema = new mongoose.Schema({
 
 const Todo = mongoose.model('Todo', todoSchema);
 
-// Routes de l'API
+// Route pour servir le fichier index.html situé dans 'Node1/public'
+app.get('/', (req, res) => {
+  // Le bon chemin absolu vers le fichier index.html
+  res.sendFile(path.join(__dirname, '..', 'Node1', 'public', 'index.html'));  // <-- Chemin corrigé
+});
 
-/**
- * @swagger
- * /todos:
- *   get:
- *     summary: "Récupérer tous les contacts"
- *     responses:
- *       200:
- *         description: "Liste des contacts"
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: string  // Changement de integer à string
- *                   prenom:
- *                     type: string
- *                   nom:
- *                     type: string
- *                   email:
- *                     type: string
- *                   telephone:
- *                     type: string
- */
+// Routes de l'API
 app.get('/todos', async (req, res) => {
   try {
     const todos = await Todo.find();
@@ -87,45 +67,7 @@ app.get('/todos', async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /todos:
- *   post:
- *     summary: "Ajouter un nouveau contact"
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               prenom:
- *                 type: string
- *               nom:
- *                 type: string
- *               email:
- *                 type: string
- *               telephone:
- *                 type: string
- *     responses:
- *       201:
- *         description: "Contact ajouté avec succès"
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: string  // Changement de integer à string
- *                 prenom:
- *                   type: string
- *                 nom:
- *                   type: string
- *                 email:
- *                   type: string
- *                 telephone:
- *                   type: string
- */
+// Ajouter un contact
 app.post('/todos', async (req, res) => {
   const { prenom, nom, email, telephone } = req.body;
   try {
@@ -143,81 +85,28 @@ app.post('/todos', async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /todos/{id}:
- *   put:
- *     summary: "Modifier un contact"
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string  // Changement de integer à string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               prenom:
- *                 type: string
- *               nom:
- *                 type: string
- *               email:
- *                 type: string
- *               telephone:
- *                 type: string
- *     responses:
- *       200:
- *         description: "Contact modifié avec succès"
- *       404:
- *         description: "Contact non trouvé"
- */
+// Modifier un contact
 app.put('/todos/:id', async (req, res) => {
   const { id } = req.params;
   const { prenom, nom, email, telephone } = req.body;
   try {
-    const contact = await Todo.findById(id);
-    if (!contact) {
-      return res.status(404).send('Contact not found');
+    const contact = await Todo.findByIdAndUpdate(id, { prenom, nom, email, telephone }, { new: true });
+    if (contact) {
+      res.json(contact);
+    } else {
+      res.status(404).send('Contact not found');
     }
-    contact.prenom = prenom;
-    contact.nom = nom;
-    contact.email = email;
-    contact.telephone = telephone;
-    await contact.save();
-    res.json(contact);
   } catch (err) {
     console.error('Error updating contact:', err);
     res.status(500).send('Error updating contact');
   }
 });
 
-/**
- * @swagger
- * /todos/{id}:
- *   delete:
- *     summary: "Supprimer un contact"
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string  // Changement de integer à string
- *     responses:
- *       204:
- *         description: "Contact supprimé avec succès"
- */
+// Supprimer un contact
 app.delete('/todos/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    const contact = await Todo.findById(id);
-    if (!contact) {
-      return res.status(404).send('Contact not found');
-    }
-    await contact.remove();
+    await Todo.findByIdAndDelete(id);
     res.status(204).send();
   } catch (err) {
     console.error('Error deleting contact:', err);
